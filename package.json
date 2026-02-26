@@ -6,20 +6,35 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --runInBand --coverage",
+    "test:e2e": "playwright test",
+    "perf:lighthouse": "lighthouse http://localhost:3000 --quiet --chrome-flags=\"--headless\" --output=json --output-path=./lighthouse-report.json"
   },
   "dependencies": {
+    "framer-motion": "^12.4.2",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@testing-library/jest-dom": "^6.7.0",
+    "@testing-library/react": "^16.2.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
+    "jest": "^30.2.0",
+    "jest-axe": "^10.0.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "lighthouse": "^12.8.2",
+    "@playwright/test": "^1.53.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
