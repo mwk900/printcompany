@@ -24,7 +24,7 @@ export function HomeHero() {
 
           <div className="flex flex-wrap gap-3">
             <Link
-              href="/contact#quote"
+              href="#quote"
               className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-paper transition hover:bg-accent-strong"
             >
               Get Quote
@@ -63,38 +63,30 @@ export function HomeHero() {
         <Reveal delay={0.1} className="h-full">
           <aside className="print-frame sticky top-24 rounded-3xl bg-paper-deep p-6 shadow-[0_12px_28px_rgba(0,0,0,0.08)] md:p-8">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-accent">
-              Quick Quote
+              Production Snapshot
             </p>
-            <h2 className="mt-3 text-2xl font-semibold text-ink">Need pricing today?</h2>
+            <h2 className="mt-3 text-2xl font-semibold text-ink">Built for deadline-driven teams</h2>
             <p className="mt-3 text-sm leading-relaxed text-muted">
-              Share the basics and our team will recommend the most practical print route for your
-              deadline and budget.
+              One dedicated quote point, practical lead-time guidance, and clear pre-press checks
+              before print starts.
             </p>
-            <form className="mt-5 space-y-3">
-              <label className="form-field">
-                Your Name
-                <input type="text" name="name" required />
-              </label>
-              <label className="form-field">
-                Email
-                <input type="email" name="email" required />
-              </label>
-              <label className="form-field">
-                What do you need printed?
-                <textarea
-                  rows={4}
-                  name="brief"
-                  placeholder="Example: 500 A4 booklets, stapled, needed by next Thursday."
-                  required
-                />
-              </label>
-              <button
-                type="submit"
-                className="w-full rounded-full bg-ink px-5 py-3 text-sm font-semibold text-paper transition hover:bg-ink-soft"
-              >
-                Request Callback
-              </button>
-            </form>
+            <ul className="mt-5 space-y-2 text-sm text-ink">
+              <li className="rounded-xl border border-ink/12 bg-paper/85 px-3 py-2">
+                Same-day digital short-run options
+              </li>
+              <li className="rounded-xl border border-ink/12 bg-paper/85 px-3 py-2">
+                Stock and finishing recommendations at quote stage
+              </li>
+              <li className="rounded-xl border border-ink/12 bg-paper/85 px-3 py-2">
+                File preflight before production lock-in
+              </li>
+            </ul>
+            <Link
+              href="#quote"
+              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-full bg-ink px-5 text-sm font-semibold text-paper transition hover:bg-ink-soft"
+            >
+              Jump to Quote Form
+            </Link>
           </aside>
         </Reveal>
       </div>

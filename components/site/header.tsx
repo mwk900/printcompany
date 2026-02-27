@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useSectionSpy } from "@/hooks/use-section-spy";
 import { getSectionsForPath } from "@/lib/section-nav";
+import { scrollToSection } from "@/lib/scroll-to-section";
 import { navLinks, siteConfig } from "@/lib/site-data";
 import { MobileMenuOverlay } from "./mobile-menu-overlay";
 import { useNavState } from "./nav-state";
@@ -65,23 +66,21 @@ export function Header() {
     setMenuOpen(false);
   }, [pathname, setMenuOpen]);
 
+  const quoteHref = pathname === "/" ? "#quote" : "/contact#quote";
+
   return (
-    <header className="sticky top-0 z-50">
+    <header className="sticky top-0 z-50" data-site-header>
       <div
-        className={`border-b border-ink/10 bg-paper/92 backdrop-blur-md transition-all duration-300 ${
-          scrolled ? "shadow-[0_8px_24px_rgba(0,0,0,0.08)]" : ""
+        className={`border-b border-ink/14 bg-[linear-gradient(180deg,rgba(241,231,219,0.97)_0%,rgba(246,242,235,0.93)_100%)] backdrop-blur-md transition-all duration-300 ${
+          scrolled ? "shadow-[0_14px_32px_rgba(32,26,18,0.14)]" : "shadow-[0_1px_0_rgba(31,37,46,0.06)]"
         }`}
       >
         <div
-          className={`mx-auto flex w-full max-w-7xl items-center justify-between px-4 md:px-6 transition-[padding] duration-300 ${
-            scrolled ? "py-2.5" : "py-4"
-          }`}
+          className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3.5 md:px-6"
         >
           <Link href="/" className="group inline-flex items-center gap-3">
             <span
-              className={`grid place-items-center rounded-sm bg-ink text-paper transition-all ${
-                scrolled ? "h-9 w-9" : "h-10 w-10"
-              }`}
+              className="grid h-10 w-10 place-items-center rounded-sm bg-ink text-paper transition-all"
             >
               <span className="text-sm font-bold tracking-wide">TVP</span>
             </span>
@@ -102,14 +101,19 @@ export function Header() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`relative text-sm font-semibold tracking-[0.02em] transition-colors ${
+                  className={`relative inline-flex items-center text-sm font-semibold tracking-[0.02em] transition-colors ${
                     active ? "text-accent" : "text-ink hover:text-accent"
                   }`}
                 >
                   {link.label}
                   <span
-                    className={`absolute -bottom-2 left-0 h-0.5 bg-accent transition-all ${
+                    className={`absolute -bottom-2 left-0 h-0.5 rounded-full bg-accent transition-all duration-200 ${
                       active ? "w-full" : "w-0"
+                    }`}
+                  />
+                  <span
+                    className={`absolute -bottom-[0.72rem] left-1/2 h-1.5 w-1.5 -translate-x-1/2 rounded-full border border-paper bg-accent transition-all duration-200 ${
+                      active ? "scale-100 opacity-100" : "scale-75 opacity-0"
                     }`}
                   />
                 </Link>
@@ -120,13 +124,20 @@ export function Header() {
           <div className="hidden items-center gap-3 md:flex">
             <Link
               href={`tel:${siteConfig.phoneHref}`}
-              className="rounded-full border border-ink/15 px-4 py-2 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
+              className="inline-flex h-10 items-center rounded-full border border-ink/18 px-4 text-sm font-semibold text-ink transition hover:border-accent hover:text-accent"
             >
               Call {siteConfig.phoneDisplay}
             </Link>
             <Link
-              href="/contact#quote"
-              className="rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-paper transition hover:bg-accent-strong"
+              href={quoteHref}
+              className="inline-flex h-10 items-center rounded-full bg-accent px-5 text-sm font-semibold text-paper transition hover:bg-accent-strong"
+              onClick={(event) => {
+                if (pathname !== "/") {
+                  return;
+                }
+                event.preventDefault();
+                scrollToSection("quote");
+              }}
             >
               Get Quote
             </Link>

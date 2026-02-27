@@ -1,6 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
+import { useEffect, useId, useRef } from "react";
 import type { QuickSection } from "@/lib/section-nav";
 
 type QuickNavSheetProps = {
@@ -18,6 +19,62 @@ export function QuickNavSheet({
   onSelect,
   onClose,
 }: QuickNavSheetProps) {
+  const headingId = useId();
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const panel = panelRef.current;
+    if (!panel) {
+      return;
+    }
+
+    const getFocusable = () =>
+      Array.from(
+        panel.querySelectorAll<HTMLElement>(
+          "button:not([disabled]), a[href], [tabindex]:not([tabindex='-1'])",
+        ),
+      );
+
+    const focusable = getFocusable();
+    focusable[0]?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (event.key !== "Tab") {
+        return;
+      }
+
+      const currentFocusable = getFocusable();
+      if (!currentFocusable.length) {
+        return;
+      }
+
+      const first = currentFocusable[0];
+      const last = currentFocusable[currentFocusable.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose, open]);
+
   return (
     <AnimatePresence>
       {open ? (
@@ -34,6 +91,10 @@ export function QuickNavSheet({
           }}
         >
           <motion.div
+            ref={panelRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={headingId}
             className="absolute inset-x-3 bottom-3 rounded-3xl border border-ink/20 bg-paper p-4 shadow-[0_20px_45px_rgba(0,0,0,0.24)]"
             initial={{ opacity: 0, y: 28 }}
             animate={{ opacity: 1, y: 0 }}
@@ -42,7 +103,10 @@ export function QuickNavSheet({
             data-testid="quick-nav-sheet"
           >
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+              <p
+                id={headingId}
+                className="text-xs font-semibold uppercase tracking-[0.14em] text-muted"
+              >
                 Quick Navigation
               </p>
               <button

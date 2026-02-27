@@ -51,8 +51,8 @@ export default function AboutPage() {
           <Reveal className="print-frame overflow-hidden rounded-3xl" delay={0.08}>
             <ParallaxMedia>
               <Image
-                src="/images/work/about-workspace.jpg"
-                alt="Print workshop bench with paper stacks and finishing equipment"
+                src="/images/work/work-colour-proofs.jpg"
+                alt="Press-side colour proof sheets and print samples on a production review table"
                 width={1280}
                 height={940}
                 className="h-full min-h-72 w-full object-cover"

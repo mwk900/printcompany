@@ -19,7 +19,6 @@ function mountSections(sectionDefs: SectionNode[]) {
   const sections = sectionDefs.map((sectionDef) => {
     const section = document.createElement("section");
     section.id = sectionDef.id;
-    section.scrollIntoView = jest.fn();
     Object.defineProperty(section, "getBoundingClientRect", {
       value: () => ({
         x: 0,
@@ -52,6 +51,7 @@ function setScrollY(nextY: number) {
 describe("Desktop scroll rail", () => {
   beforeEach(() => {
     mockUsePathname.mockReturnValue("/");
+    (window.scrollTo as jest.Mock).mockClear();
     Object.defineProperty(window, "innerHeight", {
       writable: true,
       configurable: true,
@@ -102,12 +102,9 @@ describe("Desktop scroll rail", () => {
     });
 
     await user.click(screen.getByTestId("scroll-rail-process"));
-    const processSection = document.getElementById("process") as HTMLElement & {
-      scrollIntoView: jest.Mock;
-    };
-    expect(processSection.scrollIntoView).toHaveBeenCalledWith({
+    expect(window.scrollTo).toHaveBeenCalledWith({
+      top: 1368,
       behavior: "smooth",
-      block: "start",
     });
 
     cleanup();

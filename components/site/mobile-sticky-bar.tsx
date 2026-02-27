@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { shouldShowMobileCta } from "@/lib/mobile-cta";
+import { scrollToSection } from "@/lib/scroll-to-section";
 import { siteConfig } from "@/lib/site-data";
 import { useNavState } from "./nav-state";
 
@@ -13,6 +14,7 @@ export function MobileStickyBar() {
   const pathname = usePathname();
   const { menuOpen } = useNavState();
   const show = shouldShowMobileCta(pathname, menuOpen);
+  const quoteHref = pathname === "/" ? "#quote" : "/contact#quote";
 
   return (
     <AnimatePresence>
@@ -23,6 +25,7 @@ export function MobileStickyBar() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 24 }}
           transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+          data-testid="mobile-sticky-bar"
         >
           <div className="grid grid-cols-2 gap-2 rounded-2xl border border-ink/15 bg-paper/95 p-2 shadow-[0_20px_48px_rgba(0,0,0,0.22)] backdrop-blur-lg">
             <motion.div whileTap={tapAnimation}>
@@ -41,8 +44,15 @@ export function MobileStickyBar() {
             </motion.div>
             <motion.div whileTap={tapAnimation}>
               <Link
-                href="/contact#quote"
+                href={quoteHref}
                 className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-semibold text-paper transition active:bg-accent-strong"
+                onClick={(event) => {
+                  if (pathname !== "/") {
+                    return;
+                  }
+                  event.preventDefault();
+                  scrollToSection("quote");
+                }}
               >
                 <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4">
                   <path

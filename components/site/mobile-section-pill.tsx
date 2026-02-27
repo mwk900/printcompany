@@ -44,12 +44,12 @@ export function MobileSectionPill() {
       <button
         type="button"
         aria-label="Open quick section navigation"
-        className="fixed bottom-24 left-3 z-40 inline-flex items-center gap-2 rounded-full border border-ink/20 bg-paper/96 px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink shadow-[0_10px_22px_rgba(0,0,0,0.15)] backdrop-blur md:hidden"
+        className="fixed bottom-[5.6rem] left-3 z-40 inline-flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border border-ink/20 bg-paper/96 px-3.5 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-ink shadow-[0_10px_22px_rgba(0,0,0,0.15)] backdrop-blur md:hidden"
         onClick={() => setSheetOpen(true)}
         data-testid="mobile-section-pill"
       >
         <span className="h-2 w-2 rounded-full bg-accent" />
-        {`You're in: ${activeSectionLabel}`}
+        {`Section: ${activeSectionLabel}`}
       </button>
       <QuickNavSheet
         open={sheetOpen}

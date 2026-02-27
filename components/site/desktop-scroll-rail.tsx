@@ -20,11 +20,11 @@ export function DesktopScrollRail() {
   return (
     <aside
       aria-label="Section progress"
-      className="fixed right-5 top-1/2 z-40 hidden -translate-y-1/2 lg:block"
+      className="fixed right-6 top-1/2 z-40 hidden -translate-y-1/2 xl:right-8 2xl:right-10 lg:block"
       data-testid="desktop-scroll-rail"
     >
-      <div className="relative flex flex-col items-center gap-3 py-2">
-        <span className="pointer-events-none absolute inset-y-3 left-1/2 w-px -translate-x-1/2 bg-ink/20" />
+      <div className="relative flex flex-col items-center gap-4 rounded-full border border-ink/12 bg-paper/78 px-1.5 py-3 shadow-[0_16px_28px_rgba(16,24,35,0.14)] backdrop-blur-sm">
+        <span className="pointer-events-none absolute inset-y-4 left-1/2 w-px -translate-x-1/2 bg-gradient-to-b from-ink/15 via-ink/35 to-ink/15" />
         {sections.map((section) => {
           const active = section.id === activeSectionId;
           return (
@@ -33,22 +33,22 @@ export function DesktopScrollRail() {
               type="button"
               aria-label={`Jump to ${section.label}`}
               onClick={() => scrollToSection(section.id)}
-              className="group relative flex h-6 w-6 items-center justify-center"
+              className="group relative flex h-7 w-7 items-center justify-center"
               data-active={active ? "true" : "false"}
               data-testid={`scroll-rail-${section.id}`}
             >
               <span
-                className={`h-2.5 w-2.5 rounded-full border transition ${
+                className={`rounded-full border transition-all duration-200 ${
                   active
-                    ? "border-accent bg-accent shadow-[0_0_0_4px_rgba(15,79,130,0.12)]"
-                    : "border-ink/35 bg-paper group-hover:border-accent"
+                    ? "h-3.5 w-3.5 border-accent bg-accent shadow-[0_0_0_5px_rgba(15,79,130,0.2)]"
+                    : "h-2.5 w-2.5 border-ink/40 bg-paper group-hover:h-3 group-hover:w-3 group-hover:border-accent"
                 }`}
               />
               <span
-                className={`pointer-events-none absolute right-8 rounded-full border border-ink/15 bg-paper/96 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-ink shadow-sm transition ${
+                className={`pointer-events-none absolute right-9 rounded-full border px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] shadow-sm transition-all duration-200 ${
                   active
-                    ? "opacity-100 translate-x-0"
-                    : "opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0"
+                    ? "border-accent/30 bg-paper text-accent opacity-100 translate-x-0"
+                    : "border-ink/15 bg-paper/96 text-ink/85 opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0"
                 }`}
               >
                 {section.label}

@@ -22,7 +22,9 @@ export default function HomePage() {
       <AboutSummary />
       <section className="section-space">
         <div className="mx-auto w-full max-w-7xl px-4 md:px-6">
-          <QuoteForm id="quote" />
+          <div className="mx-auto w-full max-w-5xl">
+            <QuoteForm id="quote" />
+          </div>
         </div>
       </section>
       <CtaBand

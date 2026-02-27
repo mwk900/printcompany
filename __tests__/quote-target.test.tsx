@@ -23,7 +23,14 @@ describe("Quote CTA links", () => {
     mockUsePathname.mockReturnValue("/");
   });
 
-  it("points header quote button to a single #quote target", () => {
+  it("points header quote button to the in-page quote section on home", () => {
+    render(<HeaderHarness />);
+    const quoteLink = screen.getByRole("link", { name: "Get Quote" });
+    expect(quoteLink).toHaveAttribute("href", "#quote");
+  });
+
+  it("uses contact quote route from non-home pages", () => {
+    mockUsePathname.mockReturnValue("/services");
     render(<HeaderHarness />);
     const quoteLink = screen.getByRole("link", { name: "Get Quote" });
     expect(quoteLink).toHaveAttribute("href", "/contact#quote");

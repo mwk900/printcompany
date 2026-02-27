@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useId, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useBodyScrollLock } from "@/hooks/use-body-scroll-lock";
+import { scrollToSection } from "@/lib/scroll-to-section";
 import { navLinks, siteConfig } from "@/lib/site-data";
 
 type NavLink = (typeof navLinks)[number];
@@ -36,6 +37,7 @@ function isActive(pathname: string, href: string) {
 
 export function MobileMenuOverlay({ open, onClose, links }: MobileMenuOverlayProps) {
   const pathname = usePathname();
+  const quoteHref = pathname === "/" ? "#quote" : "/contact#quote";
   const headingId = useId();
   const panelRef = useRef<HTMLDivElement>(null);
   useBodyScrollLock(open);
@@ -176,8 +178,16 @@ export function MobileMenuOverlay({ open, onClose, links }: MobileMenuOverlayPro
 
               <div className="mt-8 space-y-3 border-t border-paper/15 pt-6">
                 <Link
-                  href="/contact#quote"
-                  onClick={onClose}
+                  href={quoteHref}
+                  onClick={(event) => {
+                    if (pathname === "/") {
+                      event.preventDefault();
+                      onClose();
+                      window.setTimeout(() => scrollToSection("quote"), 40);
+                      return;
+                    }
+                    onClose();
+                  }}
                   className="inline-flex w-full justify-center rounded-full bg-accent px-6 py-3 text-sm font-semibold text-paper transition hover:bg-accent-strong"
                 >
                   Get Quote
@@ -195,7 +205,7 @@ export function MobileMenuOverlay({ open, onClose, links }: MobileMenuOverlayPro
         ) : null}
       </AnimatePresence>
     ),
-    [headingId, links, onClose, open, pathname],
+    [headingId, links, onClose, open, pathname, quoteHref],
   );
 
   if (typeof document === "undefined") {

@@ -3,6 +3,8 @@
 :root {
   --paper: #f6f2eb;
   --paper-deep: #efe7dd;
+  --paper-warm: #f1e7db;
+  --paper-warm-soft: #f8f3ec;
   --ink: #1f252e;
   --ink-soft: #2f3844;
   --muted: #5b6470;
@@ -14,6 +16,8 @@
 @theme inline {
   --color-paper: var(--paper);
   --color-paper-deep: var(--paper-deep);
+  --color-paper-warm: var(--paper-warm);
+  --color-paper-warm-soft: var(--paper-warm-soft);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-muted: var(--muted);
@@ -29,7 +33,7 @@ html {
 }
 
 body {
-  background: var(--paper);
+  background: linear-gradient(180deg, var(--paper-warm-soft) 0%, var(--paper) 24%, var(--paper) 100%);
   color: var(--ink);
   font-family: var(--font-body), sans-serif;
   min-height: 100vh;
@@ -91,7 +95,7 @@ h4 {
 }
 
 section[id] {
-  scroll-margin-top: 6.2rem;
+  scroll-margin-top: 7.2rem;
 }
 
 .print-frame {
@@ -157,6 +161,13 @@ section[id] {
 .form-field textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 2px rgb(15 79 130 / 14%);
+}
+
+.form-field input[aria-invalid="true"],
+.form-field select[aria-invalid="true"],
+.form-field textarea[aria-invalid="true"] {
+  border-color: rgb(185 28 28 / 65%);
+  box-shadow: 0 0 0 2px rgb(220 38 38 / 12%);
 }
 
 a:focus-visible,

@@ -19,7 +19,6 @@ function mountSections(sectionDefs: SectionNode[]) {
   const sections = sectionDefs.map((sectionDef) => {
     const section = document.createElement("section");
     section.id = sectionDef.id;
-    section.scrollIntoView = jest.fn();
     Object.defineProperty(section, "getBoundingClientRect", {
       value: () => ({
         x: 0,
@@ -52,6 +51,7 @@ function setScrollY(nextY: number) {
 describe("Mobile section pill", () => {
   beforeEach(() => {
     mockUsePathname.mockReturnValue("/");
+    (window.scrollTo as jest.Mock).mockClear();
     Object.defineProperty(window, "innerHeight", {
       writable: true,
       configurable: true,
@@ -86,7 +86,7 @@ describe("Mobile section pill", () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("You're in: Overview");
+      expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("Section: Overview");
     });
 
     act(() => {
@@ -94,7 +94,7 @@ describe("Mobile section pill", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("You're in: Services");
+      expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("Section: Services");
     });
 
     act(() => {
@@ -102,20 +102,17 @@ describe("Mobile section pill", () => {
     });
 
     await waitFor(() => {
-      expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("You're in: Quote");
+      expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("Section: Quote");
     });
 
     await user.click(screen.getByTestId("mobile-section-pill"));
     expect(screen.getByTestId("quick-nav-sheet")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Process" }));
-    const processSection = document.getElementById("process") as HTMLElement & {
-      scrollIntoView: jest.Mock;
-    };
     await waitFor(() => {
-      expect(processSection.scrollIntoView).toHaveBeenCalledWith({
+      expect(window.scrollTo).toHaveBeenCalledWith({
+        top: 1388,
         behavior: "smooth",
-        block: "start",
       });
     });
 
