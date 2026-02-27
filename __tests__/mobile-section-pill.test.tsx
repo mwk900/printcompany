@@ -9,62 +9,27 @@ jest.mock("next/navigation", () => ({
   usePathname: () => mockUsePathname(),
 }));
 
-type TriggerEntry = {
-  target: Element;
-  ratio: number;
-  isIntersecting: boolean;
+type SectionNode = {
+  id: string;
+  top: number;
+  height: number;
 };
 
-class TestIntersectionObserver {
-  static instances: TestIntersectionObserver[] = [];
-  readonly callback: IntersectionObserverCallback;
-
-  constructor(callback: IntersectionObserverCallback) {
-    this.callback = callback;
-    TestIntersectionObserver.instances.push(this);
-  }
-
-  observe() {}
-
-  unobserve() {}
-
-  disconnect() {}
-
-  takeRecords() {
-    return [];
-  }
-
-  trigger(entries: TriggerEntry[]) {
-    this.callback(
-      entries.map((entry) => ({
-        boundingClientRect: entry.target.getBoundingClientRect(),
-        intersectionRatio: entry.ratio,
-        intersectionRect: entry.target.getBoundingClientRect(),
-        isIntersecting: entry.isIntersecting,
-        rootBounds: null,
-        target: entry.target,
-        time: 0,
-      })),
-      this as unknown as IntersectionObserver,
-    );
-  }
-}
-
-function mountSections(ids: string[]) {
-  const elements = ids.map((id, index) => {
+function mountSections(sectionDefs: SectionNode[]) {
+  const sections = sectionDefs.map((sectionDef) => {
     const section = document.createElement("section");
-    section.id = id;
+    section.id = sectionDef.id;
     section.scrollIntoView = jest.fn();
     Object.defineProperty(section, "getBoundingClientRect", {
       value: () => ({
         x: 0,
-        y: 220 + index * 260,
-        width: 800,
-        height: 260,
-        top: 220 + index * 260,
-        right: 800,
-        bottom: 480 + index * 260,
+        y: sectionDef.top - window.scrollY,
+        top: sectionDef.top - window.scrollY,
         left: 0,
+        right: 800,
+        width: 800,
+        height: sectionDef.height,
+        bottom: sectionDef.top - window.scrollY + sectionDef.height,
         toJSON: () => ({}),
       }),
     });
@@ -72,28 +37,47 @@ function mountSections(ids: string[]) {
     return section;
   });
 
-  return () => elements.forEach((element) => element.remove());
+  return () => sections.forEach((section) => section.remove());
+}
+
+function setScrollY(nextY: number) {
+  Object.defineProperty(window, "scrollY", {
+    writable: true,
+    configurable: true,
+    value: nextY,
+  });
+  window.dispatchEvent(new Event("scroll"));
 }
 
 describe("Mobile section pill", () => {
   beforeEach(() => {
     mockUsePathname.mockReturnValue("/");
-    Object.defineProperty(window, "IntersectionObserver", {
+    Object.defineProperty(window, "innerHeight", {
       writable: true,
       configurable: true,
-      value: TestIntersectionObserver,
+      value: 780,
     });
-    Object.defineProperty(global, "IntersectionObserver", {
-      writable: true,
+    Object.defineProperty(document.documentElement, "scrollHeight", {
       configurable: true,
-      value: TestIntersectionObserver,
+      value: 4200,
     });
-    TestIntersectionObserver.instances = [];
+    Object.defineProperty(document.body, "scrollHeight", {
+      configurable: true,
+      value: 4200,
+    });
+    setScrollY(0);
   });
 
-  it("updates active label and opens/closes quick nav sheet", async () => {
+  it("tracks section accurately and opens/closes quick nav sheet", async () => {
     const user = userEvent.setup();
-    const cleanup = mountSections(["top", "services", "process", "recent-work", "about", "quote"]);
+    const cleanup = mountSections([
+      { id: "top", top: 0, height: 520 },
+      { id: "services", top: 620, height: 780 },
+      { id: "process", top: 1500, height: 700 },
+      { id: "recent-work", top: 2300, height: 700 },
+      { id: "about", top: 3100, height: 560 },
+      { id: "quote", top: 3720, height: 520 },
+    ]);
 
     render(
       <NavStateProvider menuOpen={false} setMenuOpen={() => {}}>
@@ -101,18 +85,24 @@ describe("Mobile section pill", () => {
       </NavStateProvider>,
     );
 
-    expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("You're in: Overview");
+    await waitFor(() => {
+      expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("You're in: Overview");
+    });
 
-    const observer = TestIntersectionObserver.instances[0];
     act(() => {
-      observer.trigger([
-        { target: document.getElementById("services")!, ratio: 0.8, isIntersecting: true },
-        { target: document.getElementById("top")!, ratio: 0.2, isIntersecting: true },
-      ]);
+      setScrollY(930);
     });
 
     await waitFor(() => {
       expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("You're in: Services");
+    });
+
+    act(() => {
+      setScrollY(3500);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("mobile-section-pill")).toHaveTextContent("You're in: Quote");
     });
 
     await user.click(screen.getByTestId("mobile-section-pill"));

@@ -9,62 +9,27 @@ jest.mock("next/navigation", () => ({
   usePathname: () => mockUsePathname(),
 }));
 
-type TriggerEntry = {
-  target: Element;
-  ratio: number;
-  isIntersecting: boolean;
+type SectionNode = {
+  id: string;
+  top: number;
+  height: number;
 };
 
-class TestIntersectionObserver {
-  static instances: TestIntersectionObserver[] = [];
-  readonly callback: IntersectionObserverCallback;
-
-  constructor(callback: IntersectionObserverCallback) {
-    this.callback = callback;
-    TestIntersectionObserver.instances.push(this);
-  }
-
-  observe() {}
-
-  unobserve() {}
-
-  disconnect() {}
-
-  takeRecords() {
-    return [];
-  }
-
-  trigger(entries: TriggerEntry[]) {
-    this.callback(
-      entries.map((entry) => ({
-        boundingClientRect: entry.target.getBoundingClientRect(),
-        intersectionRatio: entry.ratio,
-        intersectionRect: entry.target.getBoundingClientRect(),
-        isIntersecting: entry.isIntersecting,
-        rootBounds: null,
-        target: entry.target,
-        time: 0,
-      })),
-      this as unknown as IntersectionObserver,
-    );
-  }
-}
-
-function mountSections(ids: string[]) {
-  const elements = ids.map((id, index) => {
+function mountSections(sectionDefs: SectionNode[]) {
+  const sections = sectionDefs.map((sectionDef) => {
     const section = document.createElement("section");
-    section.id = id;
+    section.id = sectionDef.id;
     section.scrollIntoView = jest.fn();
     Object.defineProperty(section, "getBoundingClientRect", {
       value: () => ({
         x: 0,
-        y: 200 + index * 280,
-        width: 800,
-        height: 280,
-        top: 200 + index * 280,
-        right: 800,
-        bottom: 480 + index * 280,
+        y: sectionDef.top - window.scrollY,
+        top: sectionDef.top - window.scrollY,
         left: 0,
+        right: 1200,
+        width: 1200,
+        height: sectionDef.height,
+        bottom: sectionDef.top - window.scrollY + sectionDef.height,
         toJSON: () => ({}),
       }),
     });
@@ -72,27 +37,46 @@ function mountSections(ids: string[]) {
     return section;
   });
 
-  return () => elements.forEach((element) => element.remove());
+  return () => sections.forEach((section) => section.remove());
+}
+
+function setScrollY(nextY: number) {
+  Object.defineProperty(window, "scrollY", {
+    writable: true,
+    configurable: true,
+    value: nextY,
+  });
+  window.dispatchEvent(new Event("scroll"));
 }
 
 describe("Desktop scroll rail", () => {
   beforeEach(() => {
     mockUsePathname.mockReturnValue("/");
-    Object.defineProperty(window, "IntersectionObserver", {
+    Object.defineProperty(window, "innerHeight", {
       writable: true,
       configurable: true,
-      value: TestIntersectionObserver,
+      value: 900,
     });
-    Object.defineProperty(global, "IntersectionObserver", {
-      writable: true,
+    Object.defineProperty(document.documentElement, "scrollHeight", {
       configurable: true,
-      value: TestIntersectionObserver,
+      value: 4500,
     });
-    TestIntersectionObserver.instances = [];
+    Object.defineProperty(document.body, "scrollHeight", {
+      configurable: true,
+      value: 4500,
+    });
+    setScrollY(0);
   });
 
   it("highlights active section and jumps on click", async () => {
-    const cleanup = mountSections(["top", "services", "process", "recent-work", "about", "quote"]);
+    const cleanup = mountSections([
+      { id: "top", top: 0, height: 520 },
+      { id: "services", top: 620, height: 720 },
+      { id: "process", top: 1480, height: 760 },
+      { id: "recent-work", top: 2380, height: 760 },
+      { id: "about", top: 3240, height: 680 },
+      { id: "quote", top: 4010, height: 500 },
+    ]);
     const user = userEvent.setup();
 
     render(
@@ -101,16 +85,20 @@ describe("Desktop scroll rail", () => {
       </NavStateProvider>,
     );
 
-    const observer = TestIntersectionObserver.instances[0];
     act(() => {
-      observer.trigger([
-        { target: document.getElementById("services")!, ratio: 0.72, isIntersecting: true },
-        { target: document.getElementById("top")!, ratio: 0.2, isIntersecting: true },
-      ]);
+      setScrollY(900);
     });
 
     await waitFor(() => {
       expect(screen.getByTestId("scroll-rail-services")).toHaveAttribute("data-active", "true");
+    });
+
+    act(() => {
+      setScrollY(3900);
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("scroll-rail-quote")).toHaveAttribute("data-active", "true");
     });
 
     await user.click(screen.getByTestId("scroll-rail-process"));

@@ -2,68 +2,105 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-type SectionRatioMap = Record<string, number>;
+type SectionRef = {
+  id: string;
+  element: HTMLElement;
+};
 
-function getHighestRatioSection(sectionRatios: SectionRatioMap, ids: string[]) {
-  return ids.reduce<{ id: string; ratio: number }>(
-    (best, id) => {
-      const ratio = sectionRatios[id] ?? 0;
-      if (ratio > best.ratio) {
-        return { id, ratio };
-      }
+function dedupe(ids: string[]) {
+  return ids.filter((id, index) => ids.indexOf(id) === index);
+}
 
-      return best;
-    },
-    { id: ids[0] ?? "", ratio: -1 },
-  ).id;
+function resolveActiveSection(sections: SectionRef[]) {
+  if (!sections.length) {
+    return "";
+  }
+
+  const scrollTop = window.scrollY;
+  const viewportHeight = window.innerHeight;
+  const viewportBottom = scrollTop + viewportHeight;
+  const docHeight = Math.max(
+    document.documentElement.scrollHeight,
+    document.body.scrollHeight,
+  );
+
+  // Keep the final section active when user reaches footer/page bottom.
+  if (viewportBottom >= docHeight - 2) {
+    return sections[sections.length - 1].id;
+  }
+
+  const probeY = scrollTop + Math.max(120, viewportHeight * 0.38);
+  let activeId = sections[0].id;
+
+  sections.forEach((section) => {
+    const sectionTop = section.element.getBoundingClientRect().top + scrollTop;
+    if (probeY >= sectionTop) {
+      activeId = section.id;
+    }
+  });
+
+  return activeId;
 }
 
 export function useSectionSpy(sectionIds: string[]) {
-  const ids = useMemo(
-    () => sectionIds.filter((id, index) => sectionIds.indexOf(id) === index),
-    [sectionIds],
-  );
-  const [activeId, setActiveId] = useState<string | null>(null);
+  const ids = useMemo(() => dedupe(sectionIds), [sectionIds]);
+  const [activeId, setActiveId] = useState<string>("");
 
   useEffect(() => {
     if (!ids.length) {
       return;
     }
-    const elements = ids
-      .map((id) => document.getElementById(id))
-      .filter((element): element is HTMLElement => element instanceof HTMLElement);
 
-    if (!elements.length) {
+    const sections = ids
+      .map((id) => {
+        const element = document.getElementById(id);
+        if (!element) {
+          return null;
+        }
+
+        return { id, element };
+      })
+      .filter((section): section is SectionRef => section !== null);
+
+    if (!sections.length) {
       return;
     }
 
-    const ratioMap: SectionRatioMap = {};
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          ratioMap[entry.target.id] = entry.isIntersecting ? entry.intersectionRatio : 0;
-        });
+    let rafId: number | null = null;
+    const update = () => {
+      const nextId = resolveActiveSection(sections);
+      setActiveId((previous) => (previous === nextId ? previous : nextId));
+    };
 
-        const bestId = getHighestRatioSection(ratioMap, ids);
-        if (bestId) {
-          setActiveId(bestId);
-        }
-      },
-      {
-        root: null,
-        rootMargin: "-22% 0px -58% 0px",
-        threshold: [0.15, 0.35, 0.55, 0.75, 1],
-      },
-    );
+    const scheduleUpdate = () => {
+      if (rafId !== null) {
+        return;
+      }
 
-    elements.forEach((element) => observer.observe(element));
+      rafId = window.requestAnimationFrame(() => {
+        rafId = null;
+        update();
+      });
+    };
 
-    return () => observer.disconnect();
+    window.addEventListener("scroll", scheduleUpdate, { passive: true });
+    window.addEventListener("resize", scheduleUpdate);
+    window.addEventListener("load", scheduleUpdate);
+    scheduleUpdate();
+
+    return () => {
+      if (rafId !== null) {
+        window.cancelAnimationFrame(rafId);
+      }
+      window.removeEventListener("scroll", scheduleUpdate);
+      window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener("load", scheduleUpdate);
+    };
   }, [ids]);
 
-  if (!activeId || !ids.includes(activeId)) {
-    return ids[0] ?? "";
+  if (!ids.length) {
+    return "";
   }
 
-  return activeId;
+  return ids.includes(activeId) ? activeId : ids[0];
 }
